@@ -13,8 +13,8 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface.embeddings import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
 from langchain_core.prompts import ChatPromptTemplate
-from langchain.chains.combine_documents import create_stuff_documents_chain
-from langchain.chains.retrieval import create_retrieval_chain
+
+
 
 from langchain_groq import ChatGroq
 
@@ -63,21 +63,30 @@ def querySearch():
 
     prompts =ChatPromptTemplate.from_template(
         '''
-            Hey You are Intelligent AI Assistant for Agriculture Students and Scientists Help them in their research by solving their doubts on the basic of the Provided context.
+            You are an intelligent AI assistant specialized in agriculture and agricultural research. Your task is to help students, researchers, and scientists by answering their questions based on the provided context. 
 
-            {context}
+Carefully analyze the context below and provide a clear, detailed, and accurate response. Make sure your answer:
 
-            question:{input}
+1. Directly addresses the user’s query.
+2. Explains concepts in a simple, understandable way when needed.
+3. Uses examples from the context if applicable.
+4. Remains professional and informative.
+
+Context:
+{context}
+
+Question:
+{input}
+
         '''
         )
-    document_chain =create_stuff_documents_chain(llm=llm,prompt=prompts)
-    retrieval_chain = create_retrieval_chain(retriever,document_chain)
+    relevant_docs = retriever.invoke(user_query)
+    context = "\n\n".join([doc.page_content for doc in relevant_docs])
 
-    try:
-        response = retrieval_chain.invoke({"input":user_query})
-        return jsonify({"response": response})
-    except:
-        return jsonify({"response":"No Result Found"})
+    formatted_prompt = prompts.format(context=context, input=user_query)
+    response = llm.invoke(formatted_prompt)
+
+    return jsonify({"response": response.content})
     
 
 if __name__ == "__main__":
