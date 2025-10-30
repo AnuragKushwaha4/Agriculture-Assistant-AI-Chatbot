@@ -65,29 +65,31 @@ def querySearch():
         '''
             You are an intelligent AI assistant specialized in agriculture and agricultural research. Your task is to help students, researchers, and scientists by answering their questions based on the provided context. 
 
-Carefully analyze the context below and provide a clear, detailed, and accurate response. Make sure your answer:
+            Carefully analyze the context below and provide a clear, detailed, and accurate response. Make sure your answer:
 
-1. Directly addresses the user’s query.
-2. Explains concepts in a simple, understandable way when needed.
-3. Uses examples from the context if applicable.
-4. Remains professional and informative.
+                1. Directly addresses the user’s query.
+                2. Explains concepts in a simple, understandable way when needed.
+                3. Uses examples from the context if applicable.
+                4. Remains professional and informative.
 
-Context:
-{context}
+            Context:
+            {context}
 
-Question:
-{input}
+            Question:
+            {input}
 
         '''
         )
-    relevant_docs = retriever.invoke(user_query)
-    context = "\n\n".join([doc.page_content for doc in relevant_docs])
+    try:
+        relevant_docs = retriever.invoke(user_query)
+        context = "\n\n".join([doc.page_content for doc in relevant_docs])
 
-    formatted_prompt = prompts.format(context=context, input=user_query)
-    response = llm.invoke(formatted_prompt)
+        formatted_prompt = prompts.format(context=context, input=user_query)
+        response = llm.invoke(formatted_prompt)
 
-    return jsonify({"response": response.content})
-    
+        return jsonify({"response": response.content})
+    except:
+        return jsonify({"response":"Result not found"})
 
 if __name__ == "__main__":
     app.run(debug=True)
