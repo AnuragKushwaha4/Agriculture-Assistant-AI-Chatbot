@@ -8,6 +8,7 @@ os.environ["LANGCHAIN_TRACING_V2"]="true"
 os.environ["HF_API_KEY"]=os.getenv("HF_API_KEY")
 
 from flask import Flask,request,jsonify
+from flask_cors import CORS
 import requests
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface.embeddings import HuggingFaceEmbeddings
@@ -29,6 +30,7 @@ from langchain_groq import ChatGroq
 
 
 app = Flask(__name__)
+CORS(app=app)
 llm = ChatGroq(model="llama-3.3-70b-versatile")
 
 
@@ -48,14 +50,12 @@ def dataFetching(query, num_papers=5):
     res = requests.get(url, params=params)
     data = res.json()
     papers = []
-
+    print(data)
     for work in data.get("results", []):
         title = work.get("display_name", "")
         abstract_data = work.get("abstract_inverted_index", {})
         abstract_text = " ".join(abstract_data.keys()) if abstract_data else ""
         papers.append(Document(f"Title: {title}\nAbstract: {abstract_text}"))
-
-
     return papers
 
 
