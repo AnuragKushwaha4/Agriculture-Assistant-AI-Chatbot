@@ -40,9 +40,10 @@ Smart context retrieval from Chroma vector database.
 
 🧰 Tech Stack
 Layer	Technology Used
-Frontend	Next.js, React, Tailwind CSS
-Backend	Spring Boot, Java, MySQL
-AI Engine	Flask, LangChain, Chroma, Hugging Face, Groq
-Database	MySQL (User Data), ChromaDB (Vector Storage)
-APIs	OpenAlex API (Research Papers), Custom AI Endpoints
-Authentication	JWT, Spring Security
+Frontend--Next.js, React, Tailwind CSS
+Backend	--Spring Boot, Java, MySQL
+AI Engine	--Flask, LangChain, Chroma, Hugging Face, Groq
+Database --	MySQL (User Data), ChromaDB (Vector Storage)
+APIs	-- OpenAlex API (Research Papers), Custom AI Endpoints
+Authentication --	JWT, Spring Security
+
