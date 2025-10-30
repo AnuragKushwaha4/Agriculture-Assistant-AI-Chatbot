@@ -15,6 +15,15 @@ from langchain_chroma import Chroma
 from langchain_core.prompts import ChatPromptTemplate
 
 
+# Simple Document class for LangChain 1.0.3
+class Document:
+    def __init__(self, page_content, metadata=None):
+        self.page_content = page_content
+        self.metadata = metadata or {}
+
+
+
+
 
 from langchain_groq import ChatGroq
 
@@ -28,11 +37,12 @@ def CreateVector(document):
     splited_docs = splitter.split_documents(documents=document)
     embeddings =HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
     vectorStore = Chroma.from_documents(documents=splited_docs, embedding=embeddings, persist_directory="./chroma_db")
-    vectorStore.persist()
+    
     retriever = vectorStore.as_retriever()
     return retriever
 
-def dataFetching(query,num_papers = 5):
+
+def dataFetching(query, num_papers=5):
     url = "https://api.openalex.org/works"
     params = {"filter": f"title.search:{query}", "per_page": num_papers}
     res = requests.get(url, params=params)
@@ -43,17 +53,24 @@ def dataFetching(query,num_papers = 5):
         title = work.get("display_name", "")
         abstract_data = work.get("abstract_inverted_index", {})
         abstract_text = " ".join(abstract_data.keys()) if abstract_data else ""
-        papers.append(f"Title: {title}\n Abstract: {abstract_text}")
+        papers.append(Document(f"Title: {title}\nAbstract: {abstract_text}"))
+
+
     return papers
+
 
 
 @app.route("/query_research", methods=["POST"])
 def querySearch():
     data = request.get_json()
     user_query = data.get("query")
+    problem_statement = data.get("problem")
 
     if not user_query:
         return jsonify({"error": "Query missing"}), 400
+    
+    elif not problem_statement:
+        return jsonify({"error": "Enter Problem statment"}), 400
     
     papers = dataFetching(user_query)
     if not papers:
@@ -84,12 +101,14 @@ def querySearch():
         relevant_docs = retriever.invoke(user_query)
         context = "\n\n".join([doc.page_content for doc in relevant_docs])
 
-        formatted_prompt = prompts.format(context=context, input=user_query)
+        formatted_prompt = prompts.format(context=context, input=problem_statement)
         response = llm.invoke(formatted_prompt)
 
         return jsonify({"response": response.content})
-    except:
+    except Exception as e:
+        print("Error:", e)
         return jsonify({"response":"Result not found"})
 
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0',port=5000)
