@@ -1,4 +1,4 @@
-🌾 AI-Powered Agricultural Research Assistant
+###🌾 AI-Powered Agricultural Research Assistant
 
 An AI-integrated platform built to assist agriculture students, researchers, and scientists in finding, understanding, and analyzing agricultural research papers.
 The system combines Next.js (frontend), Spring Boot (backend), and LangChain-powered AI to deliver intelligent insights, secure user management, and an interactive chat interface.
@@ -46,4 +46,5 @@ AI Engine	--Flask, LangChain, Chroma, Hugging Face, Groq
 Database --	MySQL (User Data), ChromaDB (Vector Storage)
 APIs	-- OpenAlex API (Research Papers), Custom AI Endpoints
 Authentication --	JWT, Spring Security
+
 
