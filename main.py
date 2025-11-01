@@ -14,7 +14,8 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface.embeddings import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
 from langchain_core.prompts import ChatPromptTemplate
-
+from langchain_classic.chains.combine_documents import create_stuff_documents_chain
+from langchain_classic.chains.retrieval import create_retrieval_chain
 
 # Simple Document class for LangChain 1.0.3
 class Document:
@@ -50,7 +51,7 @@ def dataFetching(query, num_papers=5):
     res = requests.get(url, params=params)
     data = res.json()
     papers = []
-    print(data)
+   
     for work in data.get("results", []):
         title = work.get("display_name", "")
         abstract_data = work.get("abstract_inverted_index", {})
@@ -88,7 +89,7 @@ def querySearch():
                 2. Explains concepts in a simple, understandable way when needed.
                 3. Uses examples from the context if applicable.
                 4. Remains professional and informative.
-
+                5. If some context and input is not related to Agriculture just return Sorry I am not able to help you..
             Context:
             {context}
 
@@ -98,13 +99,12 @@ def querySearch():
         '''
         )
     try:
-        relevant_docs = retriever.invoke(user_query)
-        context = "\n\n".join([doc.page_content for doc in relevant_docs])
+        documentChain = create_stuff_documents_chain(prompt=prompts,llm=llm)
+        retrieverChain = create_retrieval_chain(retriever,documentChain)
 
-        formatted_prompt = prompts.format(context=context, input=problem_statement)
-        response = llm.invoke(formatted_prompt)
-
-        return jsonify({"response": response.content})
+        response = retrieverChain.invoke({"input":problem_statement})
+        answer = response.get("answer", "No answer found.")
+        return jsonify({"response": answer})
     except Exception as e:
         print("Error:", e)
         return jsonify({"response":"Result not found"})
